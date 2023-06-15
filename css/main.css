@@ -147,14 +147,24 @@ html, body {
 
 .heading {
   font-weight: 700;
-  font-size: 30px;
+  font-size: 25px;
   color:#FFF;
   background: #c20808;
   padding: 10px;
   padding-left: 20px;
   padding-right: 20px;
   margin: 10px;
-  border-radius: 10px;
+}
+
+.partners_button {
+  opacity: 0.7;
+  font-weight: 700;
+  font-size: 20px;
+  color:#c20808;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin: 10px;
 }
 
 p {
