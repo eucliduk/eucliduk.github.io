@@ -83,15 +83,20 @@ html, body {
 
 .splash_button {
   font-weight: 800;
-  font-size: 40px;
+  font-size: 3vw;
   color:#FFF;
   background: #c20808;
-  padding: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  margin: 10px;
-  border-radius: 10px;
-  /* border: 5px solid #012169; */
+  /*padding: 10px;/*
+  /*padding-left: 20px;*/
+  /*padding-right: 20px;*/
+  /*margin: 10px;*/
+  /*border-radius: 10px;*/
+  padding: 0.75vw;
+  padding-left: 1.5vw;
+  padding-right: 1.5vw;
+  margin: 0.75vw;
+  border-radius: 0.75vw;
+   /* border: 5px solid #012169; */
 }
 
 
