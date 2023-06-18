@@ -62,7 +62,8 @@ html, body {
 
 .title {
   font-weight: 400;
-  font-size: 135px;
+  /*font-size: 135px;*/
+  font-size: 10vw;
   color:#FFF;
 }
 
@@ -75,7 +76,8 @@ html, body {
 
 .subtitle {
   font-weight: 300;
-  font-size: 40px;
+  /*font-size: 40px;*/
+  font-size: 3vw;
   color:#FFF;
 }
 
