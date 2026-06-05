@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0"/>
+  <title>instawarp · Euclid UK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Source+Sans+3:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --space-black: #0E0A18;
+      --space-deep: #15101F;
+      --cream: #F2EAD9;
+      --grey-mid: #BBA9CB;
+      --border: rgba(242, 234, 217, 0.18);
+      --purple-primary: #A88BD9;
+      --purple-light: #C9A9F0;
+      --purple-lighter: #E4D2F2;
+      --orange-primary: #B86E36;
+      --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --font-script: 'Grand Hotel', cursive;
+      --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --ease-space: cubic-bezier(0.25, 0, 0, 1);
+      --nav-bg-top: rgba(242,242,242,0.88);
+      --nav-bg-scrolled: rgba(242,242,242,0.94);
+      --nav-ink: #293740;
+      --nav-muted: #3A4653;
+      --nav-border: #D1D6DC;
+      --card-tint: rgba(115,100,54,0.06);
+      --card-tint-hover: rgba(115,100,54,0.14);
+      --radius-main: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: var(--font-body);
+      color: var(--cream);
+      -webkit-font-smoothing: antialiased;
+    }
+    #canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      cursor: none;
+      touch-action: none; /* hand all touch events to JS; prevents browser pinch-zoom stealing the gesture */
+    }
+    #insta-title {
+      position: fixed;
+      top: 92px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-family: var(--font-script);
+      font-size: clamp(38px, 6vw, 72px);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: 0;
+      text-align: center;
+      pointer-events: none;
+      z-index: 8;
+      text-shadow: 0 8px 22px rgba(0,0,0,0.5);
+    }
+    nav#navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 40px) 0 clamp(8px, 2vw, 22px);
+      background: var(--nav-bg-top);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--nav-border);
+    }
+    .topbar-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--nav-ink);
+      font-family: var(--font-display);
+      font-size: clamp(12px, 1.05vw, 14px);
+      font-weight: 500;
+      line-height: 1.05;
+      letter-spacing: 0;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .topbar-brand a {
+      display: inline-flex;
+      align-items: center;
+      line-height: 0;
+      text-decoration: none;
+    }
+    .topbar-brand img {
+      height: 1.7em;
+      width: auto;
+      display: block;
+    }
+    .topbar-brand .topbar-mission-patch {
+      height: 68px;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.16));
+    }
+    .topbar-brand .topbar-ec-logo {
+      height: 58px;
+      max-width: 306px;
+      object-fit: contain;
+    }
+    .topbar-brand span {
+      display: inline-flex;
+      flex-direction: column;
+    }
+    .nav-links {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      display: inline-flex;
+      align-items: center;
+      color: var(--nav-muted);
+      padding: 8px 14px;
+      border-radius: var(--radius-main);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 200ms var(--ease-space), background 200ms var(--ease-space);
+    }
+    .nav-links a:hover {
+      color: var(--nav-ink);
+      background: var(--card-tint);
+    }
+    .nav-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .nav-social {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 6px;
+    }
+    .nav-social a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 9999px;
+      color: var(--nav-ink);
+      text-decoration: none;
+      transition: color 200ms var(--ease-space), transform 200ms var(--ease-space);
+    }
+    .nav-social a:hover {
+      color: var(--orange-primary);
+      transform: translateY(-1px);
+    }
+    .nav-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--nav-border);
+      border-radius: var(--radius-main);
+      background: transparent;
+      color: var(--nav-ink);
+      cursor: pointer;
+      transition: border-color 220ms var(--ease-space), background 220ms var(--ease-space);
+    }
+    .nav-icon-btn:hover {
+      border-color: var(--orange-primary);
+      background: var(--card-tint);
+    }
+    .mobile-menu-toggle { display: none; }
+    .mobile-menu-toggle-bars {
+      width: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mobile-menu-toggle-bars span {
+      height: 2px;
+      background: currentColor;
+      transform-origin: center;
+      transition: transform 200ms var(--ease-space), opacity 150ms var(--ease-space);
+    }
+    .mobile-menu-toggle.is-open .mobile-menu-toggle-bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .mobile-menu-toggle.is-open .mobile-menu-toggle-bars span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.is-open .mobile-menu-toggle-bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .mobile-menu {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 90;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: calc(100vh - 70px);
+      padding: clamp(32px, 9vh, 72px) 20px calc(28px + env(safe-area-inset-bottom));
+      overflow-y: auto;
+      background: var(--nav-bg-scrolled);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--nav-border);
+    }
+    .mobile-menu.is-open { display: flex; }
+    .mobile-menu a {
+      min-width: 260px;
+      padding: 18px 20px;
+      border-radius: var(--radius-main);
+      color: var(--nav-ink);
+      font-family: var(--font-body);
+      font-size: clamp(22px, 6vw, 30px);
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      transition: color 200ms var(--ease-space), transform 200ms var(--ease-space);
+    }
+    .mobile-menu a:hover {
+      color: var(--orange-primary);
+      transform: translateY(-1px);
+    }
+    .mobile-menu-socials {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 28px;
+    }
+    .mobile-menu-socials a {
+      min-width: 0;
+      width: 52px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 9999px;
+    }
+    .mobile-menu-socials svg {
+      width: 24px;
+      height: 24px;
+    }
+    .mobile-menu-socials a {
+      color: var(--nav-ink);
+    }
+    #share-logo-preload {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #share-logo-preload img {
+      display: block;
+      width: 1px;
+      height: 1px;
+    }
+    #welcome-guide {
+      position: fixed;
+      inset: 0;
+      z-index: 130;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(84px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+      background: rgba(242,242,242,0.62);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    #welcome-guide[hidden] {
+      display: none;
+    }
+    .welcome-card {
+      width: min(92vw, 620px);
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding: clamp(22px, 4vw, 34px);
+      border: 1px solid var(--nav-border);
+      border-radius: 8px;
+      background: rgba(242,242,242,0.96);
+      box-shadow: 0 24px 80px rgba(14,10,24,0.22);
+      color: var(--nav-ink);
+    }
+    .welcome-card h2 {
+      margin: 0 0 14px;
+      color: var(--nav-ink);
+      font-family: var(--font-display);
+      font-size: clamp(25px, 4vw, 38px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .welcome-card p {
+      margin: 0;
+      color: var(--nav-muted);
+      font-size: clamp(16px, 2.4vw, 18px);
+      font-weight: 500;
+      line-height: 1.45;
+    }
+    .welcome-intro {
+      margin-bottom: 20px;
+    }
+    .welcome-script {
+      color: var(--nav-ink);
+      font-family: var(--font-script);
+      font-size: 1.45em;
+      font-weight: 400;
+      line-height: 0.8;
+    }
+    .welcome-steps {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .welcome-step {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      align-items: center;
+      gap: 14px;
+    }
+    .welcome-icon {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--nav-border);
+      border-radius: 50%;
+      background: var(--card-tint);
+      color: var(--nav-ink);
+      flex-shrink: 0;
+    }
+    .welcome-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+    #welcome-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 46px;
+      margin-top: 24px;
+      border: 1px solid var(--nav-border);
+      border-radius: 8px;
+      background: var(--nav-ink);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s var(--ease-space), border-color 0.15s var(--ease-space);
+    }
+    #welcome-close:hover {
+      background: var(--orange-primary);
+      border-color: var(--orange-primary);
+    }
+    @media (max-width: 960px) {
+      nav#navbar {
+        height: 70px;
+      }
+      .nav-links,
+      .nav-social {
+        display: none;
+      }
+      .mobile-menu-toggle {
+        display: inline-flex;
+      }
+      .topbar-brand {
+        gap: 10px;
+        font-size: 13.5px;
+      }
+      .topbar-brand img {
+        height: 1.78em;
+      }
+      .topbar-brand .topbar-mission-patch {
+        height: 54px;
+      }
+      .topbar-brand .topbar-ec-logo {
+        height: 44px;
+        max-width: 214px;
+      }
+    }
+    /* ── Guide and settings buttons (top-left) ── */
+    #guide-toggle,
+    #info-toggle {
+      position: fixed;
+      top: 96px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(14,10,24,0.72);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      color: var(--cream);
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9;
+      transition: background 0.15s var(--ease-space), border-color 0.15s var(--ease-space), color 0.15s var(--ease-space);
+      user-select: none;
+    }
+    #guide-toggle { left: 20px; }
+    #info-toggle { left: 64px; }
+    #guide-toggle {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 22px;
+      font-style: italic;
+      font-weight: 700;
+      line-height: 1;
+    }
+    #guide-toggle:hover,
+    #info-toggle:hover         { background: rgba(168,139,217,0.2); border-color: rgba(201,169,240,0.55); color: #fff; }
+    #guide-toggle.open,
+    #info-toggle.open          { background: rgba(168,139,217,0.24); border-color: rgba(201,169,240,0.65); color: #fff; }
+
+    /* ── Collapsible info panel (top-left, below the toggle) ── */
+    #info-panel {
+      position: fixed;
+      top: 138px;
+      left: 64px;
+      background: rgba(14,10,24,0.76);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      user-select: none;
+      overflow: hidden;
+      /* collapsed state */
+      max-height: 0;
+      opacity: 0;
+      padding: 0 20px;
+      pointer-events: none;
+      transition: max-height 0.28s ease, opacity 0.2s ease, padding 0.28s ease;
+      z-index: 10;
+    }
+    #info-panel.open {
+      max-height: 160px;
+      opacity: 1;
+      padding: 16px 20px;
+      pointer-events: auto;
+    }
+    .ctrl {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      letter-spacing: 0;
+      color: var(--grey-mid);
+    }
+    .ctrl label {
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--cream);
+      min-width: 52px;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 110px; height: 3px;
+      background: rgba(242,234,217,0.18);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--purple-light);
+      cursor: pointer;
+    }
+
+    /* ── Mini pill toggle (used for grid option in info panel) ── */
+    .pill-toggle {
+      position: relative;
+      width: 36px; height: 20px;
+      background: rgba(242,234,217,0.14);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .pill-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: var(--cream);
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .pill-toggle.on { background: rgba(168,139,217,0.62); border-color: rgba(201,169,240,0.72); }
+    .pill-toggle.on::after { transform: translateX(16px); }
+
+    /* ── Bottom buttons ── */
+    #ui {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      user-select: none;
+      z-index: 9;
+    }
+    #snapshot {
+      background: rgba(14,10,24,0.72);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: background 0.15s var(--ease-space), border-color 0.15s var(--ease-space), color 0.15s var(--ease-space);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #snapshot:hover  { background: rgba(168,139,217,0.2); border-color: rgba(201,169,240,0.55); color: #fff; }
+    #snapshot:active { background: rgba(168,139,217,0.34); }
+    #upload-btn {
+      background: rgba(14,10,24,0.72);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: background 0.15s var(--ease-space), border-color 0.15s var(--ease-space), color 0.15s var(--ease-space);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #upload-btn:hover  { background: rgba(168,139,217,0.2); border-color: rgba(201,169,240,0.55); color: #fff; }
+    #upload-btn:active { background: rgba(168,139,217,0.34); }
+    #upload-btn.active { border-color: rgba(201,169,240,0.72); background: rgba(168,139,217,0.24); }
+    #page-brand {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: clamp(11px, 1.1vw, 14px);
+      font-weight: 600;
+      height: clamp(50px, 9vw, 84px);
+      pointer-events: none;
+      white-space: nowrap;
+      filter: drop-shadow(0 8px 22px rgba(0,0,0,0.42));
+    }
+    #page-brand img {
+      width: auto;
+      height: 55%;
+      display: block;
+    }
+    #page-brand .brand-text {
+      display: inline-flex;
+      flex-direction: column;
+      font-size: 1em;
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+    #page-brand .brand-text .highlight {
+      color: #fff;
+      font-weight: 600;
+    }
+    #corner-branding {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 2vw, 16px);
+      pointer-events: none;
+      z-index: 8;
+    }
+    #corner-branding a {
+      pointer-events: auto;
+      line-height: 0;
+    }
+    #chartermark {
+      height: clamp(50px, 9vw, 84px);
+      width: auto;
+      display: block;
+      filter: drop-shadow(0 8px 22px rgba(0,0,0,0.42));
+    }
+    #msg {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(242,234,217,0.72);
+      pointer-events: none;
+      text-align: center;
+      z-index: 6;
+    }
+
+    /* ── Mobile layout ────────────────────────────────────────────────────
+       Logos, text and buttons are sized with clamp() above so they scale
+       smoothly with viewport width. This block handles spacing/positioning
+       on narrow screens where the buttons would otherwise sit on top of the
+       logo strip.                                                           */
+    @media (max-width: 600px) {
+      #guide-toggle   { top: 84px; left: 14px; }
+      #info-toggle    { top: 84px; left: 58px; }
+      #info-panel     { top: 126px; left: 14px; }
+      #insta-title {
+        top: 80px;
+        font-size: clamp(34px, 10vw, 48px);
+      }
+      #welcome-guide {
+        align-items: flex-start;
+        padding-top: 86px;
+      }
+      .welcome-card {
+        max-height: calc(100vh - 112px);
+        padding: 22px;
+      }
+      .welcome-step {
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+      }
+      .welcome-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      #corner-branding { bottom: 14px; right: 14px; gap: 8px; }
+      #page-brand { gap: 4px; height: clamp(44px, 12vw, 58px); font-size: clamp(8px, 2.3vw, 10px); }
+      #chartermark { height: clamp(44px, 12vw, 58px); }
+
+      #ui { bottom: 84px; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <nav id="navbar" aria-label="Primary">
+    <div class="topbar-brand" aria-label="ESA Euclid mission and Euclid Consortium">
+      <a href="https://www.esa.int/Science_Exploration/Space_Science/Euclid" target="_blank" rel="noopener noreferrer" aria-label="ESA Euclid mission">
+        <img src="assets/euclid_mission_patch.png" alt="" aria-hidden="true" class="topbar-mission-patch"/>
+      </a>
+      <a href="https://www.euclid-ec.org" target="_blank" rel="noopener noreferrer" aria-label="Euclid Consortium">
+        <img src="images/EC_logos_official_black_with_text.png" alt="" aria-hidden="true" class="topbar-ec-logo"/>
+      </a>
+    </div>
+
+    <ul class="nav-links" role="menubar">
+      <li role="none"><a role="menuitem" href="index.html#missing-matter">Missing Matter</a></li>
+      <li role="none"><a role="menuitem" href="index.html#cosmic-clues">Cosmic Clues</a></li>
+      <li role="none"><a role="menuitem" href="index.html#detective">The Detective</a></li>
+      <li role="none"><a role="menuitem" href="humans.html">Humans of Euclid</a></li>
+      <li role="none"><a role="menuitem" href="https://www.esa.int/Science_Exploration/Space_Science/Euclid" target="_blank" rel="noopener noreferrer">Latest Images <span style="font-size:10px;margin-left:5px;opacity:0.7;">↗</span></a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-social">
+        <a href="https://www.instagram.com/euclid_uk/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+        <a href="https://bsky.app/profile/eucliduk.bsky.social" target="_blank" rel="noopener noreferrer" aria-label="Bluesky" title="Bluesky">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/euclid-uk/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+      <button id="mobileMenuToggle" class="nav-icon-btn mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" title="Toggle menu">
+        <span class="mobile-menu-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="mobileMenu" class="mobile-menu" aria-label="Mobile navigation" aria-hidden="true">
+    <a href="index.html#missing-matter">Missing Matter</a>
+    <a href="index.html#cosmic-clues">Cosmic Clues</a>
+    <a href="index.html#detective">The Detective</a>
+    <a href="humans.html">Humans of Euclid</a>
+    <a href="https://www.esa.int/Science_Exploration/Space_Science/Euclid" target="_blank" rel="noopener noreferrer">Latest Images ↗</a>
+    <div class="mobile-menu-socials">
+      <a href="https://www.instagram.com/euclid_uk/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="https://bsky.app/profile/eucliduk.bsky.social" target="_blank" rel="noopener noreferrer" aria-label="Bluesky" title="Bluesky">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/company/euclid-uk/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div id="welcome-guide" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div class="welcome-card">
+      <h2 id="welcome-title">Ready to spacetime your selfies?</h2>
+      <p class="welcome-intro"><span class="welcome-script">Instawarp</span> places a massive astronomical object between you and your camera! Based on real physics, this bends and distorts the light to distort your selfies - have fun!</p>
+      <div class="welcome-steps">
+        <div class="welcome-step">
+          <span class="welcome-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/>
+              <line x1="9" y1="8" x2="15" y2="8"/>
+              <line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+          </span>
+          <p>Go into the settings to toggle and experiment with the mass and radius of the astronomical object. How does this impact your selfies?</p>
+        </div>
+        <div class="welcome-step">
+          <span class="welcome-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </span>
+          <p>Press the image button to warp images from your camera roll instead of the camera feed.</p>
+        </div>
+        <div class="welcome-step">
+          <span class="welcome-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </span>
+          <p>Press this button to share your spacetime selfie creations with the universe!</p>
+        </div>
+      </div>
+      <button id="welcome-close" type="button">Take a spacetime selfie!</button>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+  <div id="insta-title" aria-hidden="true">instawarp</div>
+  <div id="msg">Requesting camera access…</div>
+  <div id="share-logo-preload" aria-hidden="true">
+    <img id="share-ec-logo" src="images/logos/EC_logos_official_white_with_text.png" alt="" loading="eager" decoding="sync"/>
+  </div>
+  <div id="corner-branding">
+    <div id="page-brand" aria-label="Euclid: The Dark Universe Detective">
+      <img id="brand-wordmark" src="images/logos/euclid_wordmark.png" alt="" aria-hidden="true"/>
+      <span class="brand-text">
+        <span>The <span class="highlight">Dark Universe</span></span>
+        <span>Detective</span>
+      </span>
+    </div>
+    <a href="https://royalsociety.org/science-events-and-lectures/summer-science-exhibition/" target="_blank" rel="noopener">
+      <img id="chartermark" src="images/logos/DES9400_6_SSE 2026_Chartermark_red.png" alt="Selected for The Royal Society Summer Science Exhibition 2026"/>
+    </a>
+  </div>
+  <button id="guide-toggle" aria-label="Show welcome guide" aria-controls="welcome-guide" aria-expanded="true">i</button>
+  <button id="info-toggle" aria-label="Show controls" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="4" y1="21" x2="4" y2="14"/>
+      <line x1="4" y1="10" x2="4" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="12"/>
+      <line x1="12" y1="8" x2="12" y2="3"/>
+      <line x1="20" y1="21" x2="20" y2="16"/>
+      <line x1="20" y1="12" x2="20" y2="3"/>
+      <line x1="1" y1="14" x2="7" y2="14"/>
+      <line x1="9" y1="8" x2="15" y2="8"/>
+      <line x1="17" y1="16" x2="23" y2="16"/>
+    </svg>
+  </button>
+  <div id="info-panel" role="region" aria-label="Lens controls">
+    <div class="ctrl" style="margin-bottom:12px;">
+      <label for="mass">Mass</label>
+      <input type="range" id="mass" min="0.01" max="1.0" step="0.01" value="0.35"/>
+    </div>
+    <div class="ctrl">
+      <label for="radius">Radius</label>
+      <input type="range" id="radius" min="0.05" max="0.6" step="0.01" value="0.22"/>
+    </div>
+    <div class="ctrl" style="margin-top:12px;">
+      <label>Grid</label>
+      <div class="pill-toggle" id="grid-pill" role="switch" aria-checked="false" aria-label="Grid overlay"></div>
+    </div>
+  </div>
+  <input type="file" id="img-upload" accept="image/*" style="display:none"/>
+  <div id="ui">
+    <button id="upload-btn" aria-label="Upload image">
+      <!-- Image upload icon (shown when using camera) -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+    </button>
+    <button id="snapshot" aria-label="Share capture">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"/>
+        <circle cx="6" cy="12" r="3"/>
+        <circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    // ── Welcome guide ─────────────────────────────────────────────────────
+    (function () {
+      const guide = document.getElementById('welcome-guide');
+      const close = document.getElementById('welcome-close');
+      const guideToggle = document.getElementById('guide-toggle');
+      if (!guide || !close || !guideToggle) return;
+
+      function showGuide() {
+        guide.hidden = false;
+        guideToggle.classList.add('open');
+        guideToggle.setAttribute('aria-expanded', 'true');
+        close.focus({ preventScroll: true });
+      }
+
+      function dismissGuide() {
+        guide.hidden = true;
+        guideToggle.classList.remove('open');
+        guideToggle.setAttribute('aria-expanded', 'false');
+        guideToggle.focus({ preventScroll: true });
+      }
+
+      guideToggle.addEventListener('click', showGuide);
+      close.addEventListener('click', dismissGuide);
+      guide.addEventListener('click', event => {
+        if (event.target === guide) dismissGuide();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !guide.hidden) dismissGuide();
+      });
+      window.addEventListener('load', showGuide);
+    })();
+
+    // ── Mobile menu ───────────────────────────────────────────────────────
+    (function () {
+      const toggle = document.getElementById('mobileMenuToggle');
+      const menu = document.getElementById('mobileMenu');
+      if (!toggle || !menu) return;
+
+      function setOpen(open) {
+        toggle.classList.toggle('is-open', open);
+        menu.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        menu.setAttribute('aria-hidden', String(!open));
+      }
+
+      toggle.addEventListener('click', () => setOpen(!menu.classList.contains('is-open')));
+      menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => setOpen(false));
+      });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 960) setOpen(false);
+      });
+    })();
+
+    const canvas = document.getElementById('canvas');
+    const msg    = document.getElementById('msg');
+    const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true }) || canvas.getContext('experimental-webgl', { preserveDrawingBuffer: true });
+
+    if (!gl) {
+      msg.textContent = 'WebGL not supported in this browser.';
+      throw new Error('no webgl');
+    }
+
+    // ── Shaders ─────────────────────────────────────────────────────────────
+    const VS = `
+      attribute vec2 a_pos;
+      varying vec2 v_uv;
+      void main() {
+        v_uv = a_pos * 0.5 + 0.5;
+        gl_Position = vec4(a_pos, 0.0, 1.0);
+      }
+    `;
+
+    // Gravitational lensing via the point-mass lens equation:
+    //   β = θ - θE² / |θ| * θ̂
+    // where θ is the angular position relative to lens centre,
+    // θE is the Einstein radius.
+    // We also add chromatic aberration (wavelength-dependent bending).
+    const FS = `
+      precision highp float;
+      varying vec2 v_uv;
+      uniform sampler2D u_tex;
+      uniform vec2  u_lensPos;   // lens centre in UV space [0,1]
+      uniform float u_einsteinR; // Einstein radius in UV units
+      uniform float u_mass;      // lensing strength multiplier
+      uniform float u_chroma;    // chromatic split amount
+      uniform float u_aspect;    // canvas width / height
+      uniform bool  u_mirror;    // flip x for selfie cam
+      uniform bool  u_grid;      // show distorted grid overlay
+
+      vec2 lensDeflect(vec2 uv, float wavelengthFactor) {
+        // aspect-correct the UV offsets so circles look round
+        vec2 d = uv - u_lensPos;
+        d.x *= u_aspect;
+
+        float r2 = dot(d, d);
+        float eR  = u_einsteinR * wavelengthFactor;
+        float eR2 = eR * eR * u_mass;
+
+        // lens equation deflection (avoids singularity at r=0)
+        vec2 deflect = (eR2 / max(r2, 0.0001)) * d;
+
+        // undo aspect correction on deflection
+        deflect.x /= u_aspect;
+        return uv - deflect;
+      }
+
+      void main() {
+        vec2 uv = v_uv;
+        if (u_mirror) uv.x = 1.0 - uv.x;
+
+        // chromatic aberration: R/G/B channels bend slightly differently
+        float chromaScale = u_chroma * 0.012;
+        vec2 uvR  = lensDeflect(uv, 1.0 + chromaScale);
+        vec2 srcG = lensDeflect(uv, 1.0); // source-plane coords (used for grid)
+        vec2 uvG  = srcG;
+        vec2 uvB  = lensDeflect(uv, 1.0 - chromaScale);
+
+        // clamp to edge to avoid black borders
+        uvR = clamp(uvR, 0.001, 0.999);
+        uvG = clamp(uvG, 0.001, 0.999);
+        uvB = clamp(uvB, 0.001, 0.999);
+
+        // flip v for WebGL (origin bottom-left vs video top-left)
+        uvR.y = 1.0 - uvR.y;
+        uvG.y = 1.0 - uvG.y;
+        uvB.y = 1.0 - uvB.y;
+
+        float r = texture2D(u_tex, uvR).r;
+        float g = texture2D(u_tex, uvG).g;
+        float b = texture2D(u_tex, uvB).b;
+
+        // vignette-darken the strong-lensing core
+        vec2 dc = (uv - u_lensPos);
+        dc.x *= u_aspect;
+        float core = length(dc);
+        float eR = u_einsteinR * u_mass;
+        float vign = smoothstep(0.0, eR * 0.4, core - eR * 0.05);
+        vign = mix(0.0, 1.0, vign);
+
+        gl_FragColor = vec4(r * vign, g * vign, b * vign, 1.0);
+
+        // Grid overlay — lines live in the source plane so they bend with the
+        // lens exactly as a real background grid would.
+        if (u_grid) {
+          // spX / spY scaled by aspect so each cell appears square on screen.
+          float sp     = 0.05;        // 20 columns across the image
+          float spX    = sp;
+          float spY    = sp * u_aspect;
+          float thresh = 0.016;       // line width as a fraction of cell size
+
+          float fx  = fract(srcG.x / spX);
+          float fy  = fract(srcG.y / spY);
+          float onX = step(fx, thresh) + step(1.0 - thresh, fx);
+          float onY = step(fy, thresh) + step(1.0 - thresh, fy);
+          if (onX + onY > 0.0) {
+            gl_FragColor = vec4(vign, vign, vign, 1.0);
+          }
+        }
+      }
+    `;
+
+    // ── GL setup ─────────────────────────────────────────────────────────────
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+        throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const uTex      = gl.getUniformLocation(prog, 'u_tex');
+    const uLensPos  = gl.getUniformLocation(prog, 'u_lensPos');
+    const uEinstein = gl.getUniformLocation(prog, 'u_einsteinR');
+    const uMass     = gl.getUniformLocation(prog, 'u_mass');
+    const uChroma   = gl.getUniformLocation(prog, 'u_chroma');
+    const uAspect   = gl.getUniformLocation(prog, 'u_aspect');
+    const uMirror   = gl.getUniformLocation(prog, 'u_mirror');
+    const uGrid     = gl.getUniformLocation(prog, 'u_grid');
+
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    // ── Lens position (mouse / touch) ─────────────────────────────────────
+    // Start off-screen so lens only appears once the user moves/touches
+    let lensX = -2, lensY = -2;
+    let targetX = -2, targetY = -2;
+
+    function setLens(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const localX = Math.min(rect.width, Math.max(0, clientX - rect.left));
+      const localY = Math.min(rect.height, Math.max(0, clientY - rect.top));
+      // Flip X for front-facing (mirrored) camera, flip Y because WebGL UV
+      // has Y=0 at the bottom while the browser has Y=0 at the top.
+      targetX = (!usingUpload && isFrontCam) ? 1 - localX / rect.width
+                                             : localX / rect.width;
+      targetY = 1 - localY / rect.height;
+      // Snap immediately on first interaction so it doesn't drift in from off-screen
+      if (lensX < 0) { lensX = targetX; lensY = targetY; }
+    }
+
+    canvas.addEventListener('mousemove',  e => setLens(e.clientX, e.clientY));
+    canvas.addEventListener('mouseenter', e => setLens(e.clientX, e.clientY));
+
+    // ── Touch: single finger moves lens, two fingers pinch-zooms radius ──
+    let pinchStartDist  = null;
+    let pinchStartRadius = null;
+
+    function touchDist(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function onTouch(e) {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        // Single finger moves the lens.
+        pinchStartDist = null;
+        setLens(e.touches[0].clientX, e.touches[0].clientY);
+      } else if (e.touches.length === 2) {
+        // Two fingers — pinch to set radius
+        const dist = touchDist(e.touches);
+        if (pinchStartDist === null) {
+          // Record baseline on first two-finger frame
+          pinchStartDist   = dist;
+          pinchStartRadius = parseFloat(sliderRadius.value);
+        } else {
+          const scale = dist / pinchStartDist;
+          const min = parseFloat(sliderRadius.min);
+          const max = parseFloat(sliderRadius.max);
+          sliderRadius.value = Math.min(max, Math.max(min, pinchStartRadius * scale));
+        }
+      }
+    }
+
+    canvas.addEventListener('touchstart', onTouch, { passive: false });
+    canvas.addEventListener('touchmove',  onTouch, { passive: false });
+    canvas.addEventListener('touchend', e => {
+      if (e.touches.length < 2) pinchStartDist = null;
+    }, { passive: false });
+
+    // Prevent the browser's own pinch-zoom on the whole page
+    document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
+    document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+
+    // ── Controls ──────────────────────────────────────────────────────────
+    const sliderMass   = document.getElementById('mass');
+    const sliderRadius = document.getElementById('radius');
+
+    // ── Image upload ───────────────────────────────────────────────────────
+    let uploadedImage = null;
+    let usingUpload   = false;
+    let uploadDirty   = false;
+
+    const uploadBtn  = document.getElementById('upload-btn');
+    const imgUpload  = document.getElementById('img-upload');
+
+    const SVG_IMAGE = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    const SVG_CAMERA = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+
+    function setUsingUpload(val) {
+      usingUpload = val;
+      uploadBtn.classList.toggle('active', val);
+      if (val) {
+        uploadBtn.innerHTML = SVG_CAMERA;
+        uploadBtn.setAttribute('aria-label', 'Switch to camera');
+      } else {
+        uploadedImage = null;
+        uploadBtn.innerHTML = SVG_IMAGE;
+        uploadBtn.setAttribute('aria-label', 'Upload image');
+      }
+    }
+
+    uploadBtn.addEventListener('click', () => {
+      if (usingUpload) {
+        setUsingUpload(false);
+      } else {
+        imgUpload.click();
+      }
+    });
+
+    imgUpload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      imgUpload.value = ''; // allow re-selecting same file
+      const load = src => { uploadedImage = src; uploadDirty = true; setUsingUpload(true); };
+      if (window.createImageBitmap) {
+        createImageBitmap(file).then(load).catch(() => {
+          const img = new Image();
+          img.onload = () => load(img);
+          img.src = URL.createObjectURL(file);
+        });
+      } else {
+        const img = new Image();
+        img.onload = () => load(img);
+        img.src = URL.createObjectURL(file);
+      }
+    });
+
+    // ── Info panel toggle ──────────────────────────────────────────────────
+    const infoToggle = document.getElementById('info-toggle');
+    const infoPanel  = document.getElementById('info-panel');
+    infoToggle.addEventListener('click', () => {
+      const open = infoPanel.classList.toggle('open');
+      infoToggle.classList.toggle('open', open);
+      infoToggle.setAttribute('aria-expanded', open);
+    });
+
+    // ── Grid overlay toggle ────────────────────────────────────────────────
+    let gridOn = false;
+    const gridPill = document.getElementById('grid-pill');
+    gridPill.addEventListener('click', () => {
+      gridOn = !gridOn;
+      gridPill.classList.toggle('on', gridOn);
+      gridPill.setAttribute('aria-checked', gridOn);
+    });
+
+    // ── Snapshot ──────────────────────────────────────────────────────────
+    // Composites the WebGL frame with all visible overlays onto an offscreen
+    // 2D canvas before export.
+    function buildComposite() {
+      const out = document.createElement('canvas');
+      const dpr = Math.max(window.devicePixelRatio || 1, 3);
+      out.width  = Math.round(canvas.clientWidth * dpr);
+      out.height = Math.round(canvas.clientHeight * dpr);
+      const ctx  = out.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // 1. WebGL frame
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+
+      // Read actual rendered sizes from the DOM so the composite matches the
+      // current display (clamp() values vary with viewport width on mobile).
+      const cmImg       = document.getElementById('chartermark');
+      const wordmarkImg = document.getElementById('brand-wordmark');
+      const brandTextEl = document.querySelector('#page-brand .brand-text');
+      const titleEl     = document.getElementById('insta-title');
+      const shareEcImg  = document.getElementById('share-ec-logo');
+      const brandFontPx = Math.round((brandTextEl ? parseFloat(getComputedStyle(brandTextEl).fontSize) : 16) * dpr);
+      const brandLineH = brandFontPx * 1.05;
+
+      function drawTitle() {
+        if (!titleEl) return;
+        const titleRect = titleEl.getBoundingClientRect();
+        const titleStyle = getComputedStyle(titleEl);
+        const titleFontPx = Math.round(parseFloat(titleStyle.fontSize) * dpr);
+        ctx.save();
+        ctx.font = `400 ${titleFontPx}px 'Grand Hotel', cursive`;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = Math.round(18 * dpr);
+        ctx.fillText(
+          'instawarp',
+          Math.round((titleRect.left + titleRect.width / 2) * dpr),
+          Math.round((titleRect.top + titleRect.height / 2) * dpr)
+        );
+        ctx.restore();
+      }
+
+      function drawImageAtDomRect(img) {
+        if (!img || !img.complete || !img.naturalWidth) return;
+        const r = img.getBoundingClientRect();
+        ctx.drawImage(
+          img,
+          Math.round(r.left * dpr),
+          Math.round(r.top * dpr),
+          Math.round(r.width * dpr),
+          Math.round(r.height * dpr)
+        );
+      }
+
+      function drawImageWithHeight(img, x, bottom, height) {
+        if (!img || !img.complete || !img.naturalWidth) return x;
+        const width = Math.round(img.naturalWidth * height / img.naturalHeight);
+        ctx.drawImage(img, x, bottom - height, width, height);
+        return x + width;
+      }
+
+      function drawSharePartnerLogos() {
+        const isMobile = window.innerWidth <= 600;
+        const margin = Math.round((isMobile ? 14 : 20) * dpr);
+        const ecHeight = Math.round((isMobile ? 44 : Math.min(64, Math.max(38, window.innerWidth * 0.08))) * dpr);
+        const bottom = out.height - margin;
+        drawImageWithHeight(shareEcImg, margin, bottom, ecHeight);
+      }
+
+      // Helper: draw the Space Grotesk campaign tagline beside the wordmark.
+      function brandText(x, y, sizePx) {
+        ctx.save();
+        ctx.font          = `700 ${sizePx}px 'Space Grotesk', sans-serif`;
+        ctx.fillStyle     = '#ffffff';
+        ctx.textAlign     = 'center';
+        ctx.textBaseline  = 'alphabetic';
+        ctx.fillText('The Dark Universe', x, y);
+        ctx.fillText('Detective', x, y + brandLineH);
+        ctx.restore();
+      }
+
+      // 2. Title.
+      drawTitle();
+
+      // 3. Euclid campaign lockup — bottom-right, left of the Royal Society mark.
+      drawImageAtDomRect(wordmarkImg);
+      if (brandTextEl) {
+        const textRect = brandTextEl.getBoundingClientRect();
+        brandText(
+          Math.round((textRect.left + textRect.width / 2) * dpr),
+          Math.round((textRect.top * dpr) + brandFontPx * 0.82),
+          brandFontPx
+        );
+      }
+
+      // 4. Euclid Consortium logo — included in exported/share images only.
+      drawSharePartnerLogos();
+
+      // 5. Chartermark — bottom-right
+      drawImageAtDomRect(cmImg);
+
+      return out;
+    }
+
+    async function ensureShareAssetsReady() {
+      const imgs = [
+        document.getElementById('share-ec-logo'),
+        document.getElementById('chartermark'),
+        document.getElementById('brand-wordmark')
+      ].filter(Boolean);
+      await Promise.all(imgs.map(img => {
+        if (img.complete && img.naturalWidth) return Promise.resolve();
+        if (img.decode) return img.decode().catch(() => {});
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+        });
+      }));
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready.catch(() => {});
+      }
+    }
+
+    let sharingInProgress = false;
+    document.getElementById('snapshot').addEventListener('click', async event => {
+      event.preventDefault();
+      if (sharingInProgress) return;
+      sharingInProgress = true;
+      const shareButton = event.currentTarget;
+      shareButton.disabled = true;
+
+      await ensureShareAssetsReady();
+
+      const filename = `gravitational-lens-${Date.now()}.png`;
+
+      buildComposite().toBlob(blob => {
+        if (!blob) {
+          sharingInProgress = false;
+          shareButton.disabled = false;
+          return;
+        }
+        const file = new File([blob], filename, { type: 'image/png' });
+        const finish = () => {
+          sharingInProgress = false;
+          shareButton.disabled = false;
+        };
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: 'Euclid gravitational lens' })
+            .catch(() => { /* user cancelled */ })
+            .finally(finish);
+        } else {
+          const a = document.createElement('a');
+          a.download = filename;
+          a.href = URL.createObjectURL(blob);
+          a.click();
+          URL.revokeObjectURL(a.href);
+          finish();
+        }
+      }, 'image/png');
+    });
+
+    // ── Camera ───────────────────────────────────────────────────────────
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+
+    let isFrontCam = true;
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    }).then(stream => {
+      video.srcObject = stream;
+      msg.style.display = 'none';
+      // detect front-facing camera for mirror flip
+      const track = stream.getVideoTracks()[0];
+      const settings = track.getSettings ? track.getSettings() : {};
+      isFrontCam = settings.facingMode !== 'environment';
+      video.play();
+    }).catch(err => {
+      msg.textContent = 'Camera access denied.\n(' + err.message + ')';
+    });
+
+    // ── Resize ────────────────────────────────────────────────────────────
+    function resize() {
+      canvas.width  = canvas.clientWidth  * devicePixelRatio;
+      canvas.height = canvas.clientHeight * devicePixelRatio;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ── Render loop ────────────────────────────────────────────────────────
+    function render() {
+      requestAnimationFrame(render);
+
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      if (usingUpload && uploadedImage) {
+        if (uploadDirty) {
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, uploadedImage);
+          uploadDirty = false;
+        }
+      } else {
+        if (video.readyState < 2) return;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      }
+
+      // Smooth lens position
+      lensX += (targetX - lensX) * 0.12;
+      lensY += (targetY - lensY) * 0.12;
+
+      gl.uniform1i(uTex, 0);
+      gl.uniform2f(uLensPos, lensX, lensY);
+      gl.uniform1f(uEinstein, parseFloat(sliderRadius.value));
+      gl.uniform1f(uMass,     parseFloat(sliderMass.value));
+      gl.uniform1f(uChroma,   0.4);
+      gl.uniform1f(uAspect,   canvas.width / canvas.height);
+      gl.uniform1i(uMirror,   !usingUpload && isFrontCam ? 1 : 0);
+      gl.uniform1i(uGrid,     gridOn     ? 1 : 0);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+    render();
+  </script>
+</body>
+</html>
