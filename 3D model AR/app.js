@@ -2,16 +2,6 @@ const app = document.querySelector(".app");
 const viewport = document.querySelector(".viewport");
 const video = document.querySelector("#camera");
 const canvas = document.querySelector("#scanCanvas");
-const scanState = document.querySelector("#scanState");
-const scanDetail = document.querySelector("#scanDetail");
-const cameraBadge = document.querySelector("#cameraBadge");
-const startButton = document.querySelector("#startButton");
-const lockButton = document.querySelector("#lockButton");
-const demoButton = document.querySelector("#demoButton");
-const resetButton = document.querySelector("#resetButton");
-const scaleControl = document.querySelector("#scaleControl");
-const xControl = document.querySelector("#xControl");
-const yControl = document.querySelector("#yControl");
 const hotspots = [...document.querySelectorAll(".hotspot")];
 const labels = [...document.querySelectorAll(".label")];
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -25,8 +15,11 @@ const TARGET_IMAGE_URLS = [
   "Training%20Images/targets-small/IMG_2567.target.jpg",
   "Training%20Images/targets-small/IMG_2568.target.jpg"
 ];
-const TARGET_MATCH_THRESHOLD = 0.72;
-const TARGET_LOCATED_THRESHOLD = 0.64;
+const TARGET_MATCH_THRESHOLD = 0.58;
+const TARGET_LOCATED_THRESHOLD = 0.52;
+const TARGET_LOST_THRESHOLD = 0.44;
+const TRACK_BASE_WINDOW = 0.78;
+const TRACK_FRAME_INTERVAL = 120;
 
 let stream = null;
 let scanId = 0;
@@ -36,45 +29,55 @@ let demoMode = false;
 let targetsReady = false;
 let targetDescriptors = [];
 let bestTargetName = "";
+let lastTrackAt = 0;
+let trackedPose = { x: 0, y: 0, scale: 1 };
+let lastGoodPose = { x: 0, y: 0, scale: 1 };
 
 const params = new URLSearchParams(window.location.search);
 if (params.has("reset")) {
   localStorage.removeItem("euclid-ar-calibration");
 }
 
-const savedCalibration = JSON.parse(localStorage.getItem("euclid-ar-calibration") || "null");
-const calibration = savedCalibration || { scale: 100, x: 0, y: 0 };
+const calibration = { scale: 100, x: 0, y: 0 };
 
 function setBadge(text, mode = "") {
-  cameraBadge.textContent = text;
-  cameraBadge.dataset.mode = mode;
+  document.documentElement.dataset.euclidCamera = mode || text.toLowerCase().replace(/\s+/g, "-");
 }
 
 function setScan(title, detail) {
-  scanState.textContent = title;
-  scanDetail.textContent = detail;
+  document.documentElement.dataset.euclidScan = title.toLowerCase().replace(/\s+/g, "-");
+  document.documentElement.dataset.euclidScanDetail = detail;
 }
 
 function updateCalibration() {
   viewport.style.setProperty("--overlay-scale", calibration.scale);
   viewport.style.setProperty("--overlay-x", calibration.x);
   viewport.style.setProperty("--overlay-y", calibration.y);
-  scaleControl.value = calibration.scale;
-  xControl.value = calibration.x;
-  yControl.value = calibration.y;
-  localStorage.setItem("euclid-ar-calibration", JSON.stringify(calibration));
+}
+
+function updateTrackedPose(pose = trackedPose) {
+  const viewportWidth = viewport.clientWidth || window.innerWidth || 1;
+  const viewportHeight = viewport.clientHeight || window.innerHeight || 1;
+  viewport.style.setProperty("--track-x", `${Math.round(pose.x * viewportWidth)}px`);
+  viewport.style.setProperty("--track-y", `${Math.round(pose.y * viewportHeight)}px`);
+  viewport.style.setProperty("--track-scale", pose.scale.toFixed(3));
+}
+
+function resetTrackedPose() {
+  trackedPose = { x: 0, y: 0, scale: 1 };
+  lastGoodPose = { ...trackedPose };
+  updateTrackedPose();
 }
 
 function setLocked(value) {
   locked = value;
   app.classList.toggle("is-locked", locked);
-  lockButton.textContent = locked ? "Unlock" : "Lock";
-  setScan(locked ? "Locked" : "Scanning", locked ? "Euclid overlay active" : "Euclid training target search");
-  setBadge(locked ? "Overlay active" : "Scanning", locked ? "active" : "");
+  setScan(locked ? "Locked" : "Scanning", locked ? "overlay-active" : "target-search");
 }
 
 function stopCamera() {
   if (!stream) return;
+  cancelAnimationFrame(scanId);
   stream.getTracks().forEach((track) => track.stop());
   stream = null;
   video.srcObject = null;
@@ -83,8 +86,7 @@ function stopCamera() {
 async function startCamera() {
   demoMode = false;
   app.classList.remove("is-demo");
-  setBadge("Camera starting");
-  setScan(targetsReady ? "Scanning" : "Loading targets", "Euclid training target search");
+  setBadge("Camera starting", "starting");
 
   try {
     stopCamera();
@@ -100,14 +102,13 @@ async function startCamera() {
     stream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = stream;
     await video.play();
+    resetTrackedPose();
     setLocked(false);
-    setBadge("Rear camera");
+    setBadge("Rear camera", "active");
     startScan();
   } catch (error) {
     console.warn("Camera unavailable", error);
-    setBadge("Camera blocked", "warn");
-    setScan("Camera unavailable", "Demo mode ready");
-    startDemo();
+    setBadge("Camera blocked", "blocked");
   }
 }
 
@@ -116,8 +117,9 @@ function startDemo() {
   stopCamera();
   cancelAnimationFrame(scanId);
   app.classList.add("is-demo");
+  resetTrackedPose();
   setLocked(true);
-  setBadge("Demo mode", "active");
+  setBadge("Demo mode", "demo");
 }
 
 function resetExperience() {
@@ -126,13 +128,13 @@ function resetExperience() {
   calibration.x = 0;
   calibration.y = 0;
   updateCalibration();
+  resetTrackedPose();
   setLocked(false);
 
   if (demoMode) {
     app.classList.remove("is-demo");
     demoMode = false;
-    setBadge("Ready");
-    setScan("Scanning", "Euclid training target search");
+    setBadge("Ready", "ready");
   } else if (stream) {
     startScan();
   }
@@ -144,6 +146,19 @@ function drawSourceCover(context, source, width, height, shiftY = 0.5) {
   const sourceSize = Math.min(sourceWidth, sourceHeight);
   const sx = (sourceWidth - sourceSize) / 2;
   const sy = Math.max(0, Math.min(sourceHeight - sourceSize, (sourceHeight - sourceSize) * shiftY));
+
+  context.clearRect(0, 0, width, height);
+  context.drawImage(source, sx, sy, sourceSize, sourceSize, 0, 0, width, height);
+}
+
+function drawSourceWindow(context, source, width, height, pose) {
+  const sourceWidth = source.videoWidth || source.naturalWidth || source.width;
+  const sourceHeight = source.videoHeight || source.naturalHeight || source.height;
+  const sourceSize = Math.min(sourceWidth, sourceHeight) * pose.window;
+  const centerX = sourceWidth * (0.5 + pose.x);
+  const centerY = sourceHeight * (0.5 + pose.y);
+  const sx = Math.max(0, Math.min(sourceWidth - sourceSize, centerX - sourceSize / 2));
+  const sy = Math.max(0, Math.min(sourceHeight - sourceSize, centerY - sourceSize / 2));
 
   context.clearRect(0, 0, width, height);
   context.drawImage(source, sx, sy, sourceSize, sourceSize, 0, 0, width, height);
@@ -241,39 +256,97 @@ function findBestTargetMatch(descriptor) {
   return { score: bestScore, name: bestName };
 }
 
-function scoreCameraFrame() {
-  if (!video.videoWidth || !video.videoHeight) return { score: 0, name: "" };
+function getCandidatePoses() {
+  if (locked) {
+    const center = lastGoodPose;
+    const offsets = [-0.09, 0, 0.09];
+    const windows = [
+      Math.max(0.48, Math.min(1, TRACK_BASE_WINDOW / (center.scale * 1.16))),
+      Math.max(0.48, Math.min(1, TRACK_BASE_WINDOW / center.scale)),
+      Math.max(0.48, Math.min(1, TRACK_BASE_WINDOW / (center.scale * 0.88)))
+    ];
 
-  drawSourceCover(ctx, video, canvas.width, canvas.height);
-  const descriptor = createDescriptor(ctx.getImageData(0, 0, canvas.width, canvas.height), canvas.width, canvas.height);
-  return findBestTargetMatch(descriptor);
+    return windows.flatMap((windowSize) => (
+      offsets.flatMap((dy) => offsets.map((dx) => ({
+        x: Math.max(-0.32, Math.min(0.32, center.x + dx)),
+        y: Math.max(-0.32, Math.min(0.32, center.y + dy)),
+        window: windowSize
+      })))
+    ));
+  }
+
+  const offsets = [-0.24, -0.12, 0, 0.12, 0.24];
+  const windows = [0.52, 0.66, TRACK_BASE_WINDOW, 0.9, 1];
+  return windows.flatMap((windowSize) => (
+    offsets.flatMap((dy) => offsets.map((dx) => ({ x: dx, y: dy, window: windowSize })))
+  ));
+}
+
+function smoothTrackedPose(pose, score) {
+  const targetScale = Math.max(0.7, Math.min(1.55, TRACK_BASE_WINDOW / pose.window));
+  const targetPose = {
+    x: pose.x,
+    y: pose.y,
+    scale: targetScale
+  };
+  const smoothing = locked ? 0.28 : 0.5;
+
+  trackedPose = {
+    x: trackedPose.x + (targetPose.x - trackedPose.x) * smoothing,
+    y: trackedPose.y + (targetPose.y - trackedPose.y) * smoothing,
+    scale: trackedPose.scale + (targetPose.scale - trackedPose.scale) * smoothing
+  };
+
+  if (score > TARGET_LOST_THRESHOLD) {
+    lastGoodPose = { ...trackedPose };
+  }
+
+  updateTrackedPose(trackedPose);
+}
+
+function scoreCameraFrame() {
+  if (!video.videoWidth || !video.videoHeight) return { score: 0, name: "", pose: lastGoodPose };
+
+  let best = { score: 0, name: "", pose: lastGoodPose };
+  getCandidatePoses().forEach((pose) => {
+    drawSourceWindow(ctx, video, canvas.width, canvas.height, pose);
+    const descriptor = createDescriptor(ctx.getImageData(0, 0, canvas.width, canvas.height), canvas.width, canvas.height);
+    const match = findBestTargetMatch(descriptor);
+    if (match.score > best.score) {
+      best = { ...match, pose };
+    }
+  });
+  return best;
 }
 
 function startScan() {
   cancelAnimationFrame(scanId);
 
-  const tick = () => {
-    if (!stream || locked) return;
+  const tick = (timestamp = 0) => {
+    if (!stream) return;
+
+    if (timestamp - lastTrackAt < TRACK_FRAME_INTERVAL) {
+      scanId = requestAnimationFrame(tick);
+      return;
+    }
+    lastTrackAt = timestamp;
 
     if (!targetsReady) {
-      setScan("Loading targets", "Preparing Euclid training images");
       scanId = requestAnimationFrame(tick);
       return;
     }
 
     const match = scoreCameraFrame();
-    confidence = confidence * 0.84 + match.score * 0.16;
+    confidence = confidence * 0.72 + match.score * 0.28;
     bestTargetName = match.name;
-
-    if (confidence > TARGET_LOCATED_THRESHOLD) {
-      setScan("Euclid located", `${bestTargetName} match ${Math.round(confidence * 100)}%`);
-    } else {
-      setScan("Scanning", "Euclid training target search");
+    if (match.score > TARGET_LOST_THRESHOLD) {
+      smoothTrackedPose(match.pose, match.score);
     }
 
-    if (confidence > TARGET_MATCH_THRESHOLD) {
+    setScan(locked ? "Tracking" : "Scanning", bestTargetName);
+
+    if (!locked && confidence > TARGET_MATCH_THRESHOLD) {
       setLocked(true);
-      return;
     }
 
     scanId = requestAnimationFrame(tick);
@@ -313,7 +386,6 @@ async function buildTargetDescriptor(url) {
 }
 
 async function loadTrainingTargets() {
-  setScan("Loading targets", "Preparing Euclid training images");
   const results = await Promise.allSettled(TARGET_IMAGE_URLS.map(buildTargetDescriptor));
   targetDescriptors = results
     .filter((result) => result.status === "fulfilled")
@@ -323,12 +395,10 @@ async function loadTrainingTargets() {
 
   if (targetsReady) {
     if (!demoMode && !locked && !stream) {
-      setBadge(`${targetDescriptors.length} targets`);
-      setScan("Ready", "Training target scan prepared");
+      setBadge("Targets ready", "ready");
     }
   } else {
-    setBadge("No targets", "warn");
-    setScan("Targets unavailable", "Use Demo or Lock manually");
+    setBadge("Unavailable", "unavailable");
   }
 }
 
@@ -350,46 +420,10 @@ hotspots.forEach((hotspot) => {
   });
 });
 
-startButton.addEventListener("click", startCamera);
-demoButton.addEventListener("click", startDemo);
-resetButton.addEventListener("click", resetExperience);
-
-lockButton.addEventListener("click", () => {
-  setLocked(!locked);
-  if (!locked && stream) startScan();
-});
-
-scaleControl.addEventListener("input", (event) => {
-  calibration.scale = Number(event.target.value);
-  updateCalibration();
-});
-
-xControl.addEventListener("input", (event) => {
-  calibration.x = Number(event.target.value);
-  updateCalibration();
-});
-
-yControl.addEventListener("input", (event) => {
-  calibration.y = Number(event.target.value);
-  updateCalibration();
-});
-
-viewport.addEventListener("pointerdown", (event) => {
-  if (!locked || event.target.closest("button, input, label")) return;
-
-  const rect = viewport.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width - 0.5) * 28;
-  const y = ((event.clientY - rect.top) / rect.height - 0.5) * 28;
-
-  calibration.x = Math.round(Math.max(-18, Math.min(18, x)));
-  calibration.y = Math.round(Math.max(-18, Math.min(18, y)));
-  updateCalibration();
-});
-
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     cancelAnimationFrame(scanId);
-  } else if (stream && !locked) {
+  } else if (stream) {
     startScan();
   }
 });
@@ -409,11 +443,14 @@ window.euclidARDebug = {
 };
 
 updateCalibration();
-setBadge("Ready");
-loadTrainingTargets();
-
-if (params.has("demo")) {
-  startDemo();
-} else if (params.has("lock")) {
-  setLocked(true);
-}
+resetTrackedPose();
+setBadge("Ready", "ready");
+loadTrainingTargets().then(() => {
+  if (params.has("demo")) {
+    startDemo();
+  } else if (params.has("lock")) {
+    setLocked(true);
+  } else {
+    startCamera();
+  }
+});

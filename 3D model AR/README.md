@@ -16,13 +16,11 @@ Host this folder on an HTTPS URL and point the QR code to `index.html`. Mobile b
 
 ## Experience
 
-- `Start AR` requests the device rear camera.
-- The scan frame compares the live camera view with the training images in `Training Images/targets-small` and then locks the Euclid label overlay when the model is recognized.
-- `Lock` toggles the overlay manually for exhibit conditions where the model is already framed.
-- `Demo` shows the included `Euclid_spacecraft.png` reference image with the same overlay for testing.
-- The `Size`, `X`, and `Y` controls calibrate the overlay to the physical model and are saved in the browser.
-- Add `?demo=1&reset=1` to the URL to open directly into a clean demo view.
+- The page requests the rear camera automatically.
+- Visitors pan their device until the Euclid model is in view.
+- The app compares the live camera view with the training images in `Training Images/targets-small`, reveals the Euclid label overlay when the model is recognized, and keeps tracking the model's position so labels move with it.
+- Add `?demo=1&reset=1` to the URL to open a development demo view.
 
 The only target images needed by the app are the JPEGs in `Training Images/targets-small`.
 
-This app uses practical browser-only target matching. More precise pose tracking of the physical 3D model would require a dedicated WebXR/AR SDK pipeline.
+This app uses practical browser-only target matching and lightweight position/scale tracking. More precise 3D pose tracking of the physical model would require a dedicated WebXR/AR SDK pipeline.

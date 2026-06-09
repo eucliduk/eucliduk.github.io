@@ -1,11 +1,13 @@
-const CACHE_NAME = "euclid-ar-v10";
+const CACHE_NAME = "euclid-ar-v20";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=10",
-  "./app.js?v=10",
+  "./styles.css?v=20",
+  "./app.js?v=20",
   "./manifest.webmanifest",
   "./Euclid_spacecraft.png",
+  "./assets/euclid_wordmark_dark.png",
+  "./assets/euclid_wordmark.png",
   "./Training%20Images/targets-small/IMG_2564.target.jpg",
   "./Training%20Images/targets-small/IMG_2565.target.jpg",
   "./Training%20Images/targets-small/IMG_2566.target.jpg",
