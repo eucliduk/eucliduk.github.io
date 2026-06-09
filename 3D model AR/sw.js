@@ -1,16 +1,16 @@
-const CACHE_NAME = "euclid-ar-v9";
+const CACHE_NAME = "euclid-ar-v10";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=9",
-  "./app.js?v=9",
+  "./styles.css?v=10",
+  "./app.js?v=10",
   "./manifest.webmanifest",
   "./Euclid_spacecraft.png",
-  "./Training%20Images/targets-web/IMG_2564.target.jpg",
-  "./Training%20Images/targets-web/IMG_2565.target.jpg",
-  "./Training%20Images/targets-web/IMG_2566.target.jpg",
-  "./Training%20Images/targets-web/IMG_2567.target.jpg",
-  "./Training%20Images/targets-web/IMG_2568.target.jpg"
+  "./Training%20Images/targets-small/IMG_2564.target.jpg",
+  "./Training%20Images/targets-small/IMG_2565.target.jpg",
+  "./Training%20Images/targets-small/IMG_2566.target.jpg",
+  "./Training%20Images/targets-small/IMG_2567.target.jpg",
+  "./Training%20Images/targets-small/IMG_2568.target.jpg"
 ];
 
 self.addEventListener("install", (event) => {

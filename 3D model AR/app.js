@@ -19,11 +19,11 @@ const targetCanvas = document.createElement("canvas");
 const targetCtx = targetCanvas.getContext("2d", { willReadFrequently: true });
 
 const TARGET_IMAGE_URLS = [
-  "Training%20Images/targets-web/IMG_2564.target.jpg",
-  "Training%20Images/targets-web/IMG_2565.target.jpg",
-  "Training%20Images/targets-web/IMG_2566.target.jpg",
-  "Training%20Images/targets-web/IMG_2567.target.jpg",
-  "Training%20Images/targets-web/IMG_2568.target.jpg"
+  "Training%20Images/targets-small/IMG_2564.target.jpg",
+  "Training%20Images/targets-small/IMG_2565.target.jpg",
+  "Training%20Images/targets-small/IMG_2566.target.jpg",
+  "Training%20Images/targets-small/IMG_2567.target.jpg",
+  "Training%20Images/targets-small/IMG_2568.target.jpg"
 ];
 const TARGET_MATCH_THRESHOLD = 0.72;
 const TARGET_LOCATED_THRESHOLD = 0.64;
