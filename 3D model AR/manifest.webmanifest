@@ -1,0 +1,12 @@
+{
+  "name": "Euclid AR Overlay",
+  "short_name": "Euclid AR",
+  "description": "Mobile camera overlay for Euclid spacecraft exhibit labels.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#061318",
+  "theme_color": "#061318",
+  "scope": "./",
+  "icons": []
+}
