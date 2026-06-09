@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#061318">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Euclid AR Overlay</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css?v=8">
+  </head>
+  <body>
+    <main class="app" aria-label="Euclid augmented reality overlay">
+      <section class="viewport" aria-live="polite">
+        <video id="camera" class="camera" autoplay muted playsinline></video>
+        <img id="demoImage" class="demo-image" src="Euclid_spacecraft.png" alt="">
+        <canvas id="scanCanvas" class="scan-canvas" width="96" height="96"></canvas>
+
+        <div id="scanLayer" class="scan-layer">
+          <div class="scan-frame" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="scan-readout">
+            <strong id="scanState">Scanning</strong>
+            <small id="scanDetail">Euclid model search</small>
+          </div>
+        </div>
+
+        <svg class="anchor-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <g id="lineSet">
+            <path data-line="sunshield" d="M55 27 L74 25"></path>
+            <path data-line="telescope" d="M43 38 L28 39"></path>
+            <path data-line="instruments" d="M43 61 L35 75"></path>
+            <path data-line="service" d="M54 59 L72 63"></path>
+            <path data-line="solar" d="M65 38 L82 38"></path>
+            <path data-line="scale" d="M78 27 L86 20"></path>
+          </g>
+        </svg>
+
+        <div id="overlay" class="overlay" aria-label="Euclid spacecraft details">
+          <button class="hotspot hotspot-telescope" type="button" aria-label="Telescope detail"></button>
+          <button class="hotspot hotspot-sunshield" type="button" aria-label="Sunshield detail"></button>
+          <button class="hotspot hotspot-instruments" type="button" aria-label="Instruments detail"></button>
+          <button class="hotspot hotspot-service" type="button" aria-label="Service module detail"></button>
+          <button class="hotspot hotspot-solar" type="button" aria-label="Solar panels detail"></button>
+
+          <article class="label label-telescope" data-label="telescope">
+            <h2>Telescope</h2>
+            <p>1.2 m diameter visible-light telescope.</p>
+          </article>
+
+          <article class="label label-sunshield" data-label="sunshield">
+            <h2>Sunshield</h2>
+            <p>Shields the telescopes and instruments from the Sun for thermal stability.</p>
+          </article>
+
+          <article class="label label-instruments" data-label="instruments">
+            <h2>VIS and NISP</h2>
+            <p>Visible imaging, near-infrared spectroscopy and photometry.</p>
+          </article>
+
+          <article class="label label-service" data-label="service">
+            <h2>Service module</h2>
+            <p>Power distribution, attitude control, propulsion, telecommands, telemetry and data handling.</p>
+          </article>
+
+          <article class="label label-solar" data-label="solar">
+            <h2>Solar panels</h2>
+            <p>Mounted on the service module side of the spacecraft.</p>
+          </article>
+
+          <article class="label label-scale" data-label="scale">
+            <h2>4.7 m tall</h2>
+            <p>3.7 m in diameter, with a mass of about 2 tonnes in orbit.</p>
+          </article>
+
+          <aside class="mission-panel">
+            <h1>Euclid spacecraft</h1>
+            <p>VIS operates at -33 C and NISP at -180 C. Onboard mass memory stores 4 terabits of science data.</p>
+            <dl>
+              <div>
+                <dt>Payload</dt>
+                <dd>800 kg</dd>
+              </div>
+              <div>
+                <dt>Service</dt>
+                <dd>850 kg</dd>
+              </div>
+              <div>
+                <dt>Propellant</dt>
+                <dd>210 kg</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+
+        <div class="topbar">
+          <div class="brand">
+            <span class="mark">E</span>
+            <span>Euclid AR</span>
+          </div>
+          <span id="cameraBadge" class="badge">Ready</span>
+        </div>
+
+        <div class="toolbar" role="group" aria-label="AR controls">
+          <button id="startButton" class="primary" type="button">
+            <span class="button-icon" aria-hidden="true"></span>
+            <span>Start AR</span>
+          </button>
+          <button id="lockButton" type="button">Lock</button>
+          <button id="demoButton" type="button">Demo</button>
+          <button id="resetButton" type="button">Reset</button>
+        </div>
+
+        <div id="calibration" class="calibration" aria-label="Overlay calibration">
+          <label>
+            <span>Size</span>
+            <input id="scaleControl" type="range" min="72" max="128" value="100">
+          </label>
+          <label>
+            <span>X</span>
+            <input id="xControl" type="range" min="-18" max="18" value="0">
+          </label>
+          <label>
+            <span>Y</span>
+            <input id="yControl" type="range" min="-18" max="18" value="0">
+          </label>
+        </div>
+      </section>
+    </main>
+    <script src="app.js?v=8"></script>
+  </body>
+</html>
