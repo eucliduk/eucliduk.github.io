@@ -18,9 +18,9 @@
     } catch (e) {}
   })();
 </script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -348,7 +348,6 @@
     background-size: cover; background-position: center;
     transition: filter 400ms var(--ease-space);
     transform-origin: center center;
-    will-change: transform, background-position;
   }
   /* When .slide-bg is a <video> (used for slide 1 in light mode), make it
      behave like a cover background: fill the container and crop to centre. */
@@ -1017,7 +1016,110 @@ Object.assign(window, { EuclidNav });
 // Wordmark · Space Grotesk tagline (Detective accented) · body · CTAs · Royal Society chartermark.
 // Background uses the existing .slide-bg-1 imagery with the Ken-Burns drift
 // from index.html (kept on .euclid-slide.is-active).
-function EuclidHero() {
+const HERO_BACKGROUNDS = {
+  light: {
+    video: 'images/orig-2301_026_AR_EN_hero.mp4',
+    poster: 'images/orig-2301_026_AR_EN_hero_poster.jpg',
+  },
+  dark: {
+    video: 'images/CosmicWeb_hero.mp4',
+    poster: 'images/CosmicWeb_hero_poster.jpg',
+  },
+};
+
+function HeroBackground({ theme, isNarrow }) {
+  const videoRef = React.useRef(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
+  const [videoReady, setVideoReady] = React.useState(false);
+  const activeTheme = theme === 'dark' ? 'dark' : 'light';
+  const background = HERO_BACKGROUNDS[activeTheme];
+
+  React.useEffect(() => {
+    setVideoReady(false);
+    const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+    const reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    if (saveData || reducedMotion) {
+      setShouldLoadVideo(false);
+      return undefined;
+    }
+
+    const start = () => setShouldLoadVideo(true);
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(start, { timeout: 900 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timer = window.setTimeout(start, 350);
+    return () => window.clearTimeout(timer);
+  }, [activeTheme]);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !shouldLoadVideo) return undefined;
+
+    const tryPlay = () => {
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      tryPlay();
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries[0] && entries[0].isIntersecting;
+      if (visible) {
+        tryPlay();
+      } else {
+        video.pause();
+      }
+    }, { threshold: 0.08 });
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [shouldLoadVideo, background.video]);
+
+  return (
+    <>
+      <div
+        className={`slide-bg slide-bg-1 ${activeTheme === 'dark' ? 'slide-bg-1--cosmic-web' : ''}`}
+        aria-hidden="true"
+        style={{
+          backgroundImage: `url("${background.poster}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+        }}
+      />
+      {shouldLoadVideo && (
+        <video
+          key={background.video}
+          ref={videoRef}
+          className={`slide-bg slide-bg-1 ${activeTheme === 'dark' ? 'slide-bg-1--cosmic-web' : ''}`}
+          src={background.video}
+          poster={background.poster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          onCanPlay={() => setVideoReady(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center center',
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 500ms var(--ease-space)',
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function EuclidHero({ theme }) {
   const [isNarrow, setIsNarrow] = React.useState(typeof window !== 'undefined' && window.innerWidth < 720);
 
   React.useEffect(() => {
@@ -1043,27 +1145,7 @@ function EuclidHero() {
         paddingTop: 64,
         display: 'flex', overflow: 'hidden', background: 'var(--space-black)',
       }}>
-      {/* Background — theme-aware autoplay video clip.
-         Light mode plays the ESA "Euclid in space" beauty clip; dark
-         mode plays the CosmicWeb simulation, which sits visually with
-         the rest of the dark-mode (M78-inspired) palette. The two
-         videos are rendered side-by-side and toggled via the same
-         .logo-img--light-only / .logo-img--dark-only CSS swap that
-         theme-aware images use elsewhere. */}
-      <video
-        className="slide-bg slide-bg-1 logo-img--light-only"
-        src="images/orig-2301_026_AR_EN.mp4"
-        autoPlay muted loop playsInline preload="auto"
-        aria-hidden="true"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-      />
-      <video
-        className="slide-bg slide-bg-1 slide-bg-1--cosmic-web logo-img--dark-only"
-        src="images/CosmicWeb.mp4"
-        autoPlay muted loop playsInline preload="auto"
-        aria-hidden="true"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-      />
+      <HeroBackground theme={theme} isNarrow={isNarrow} />
 
       {/* Vignette scrim — boosts white-text contrast over busy imagery */}
       <div aria-hidden style={{
@@ -1310,7 +1392,7 @@ function ScienceSection() {
                 marginBottom: 24, paddingLeft: 16,
                 borderLeft: '2px solid var(--purple-light)',
               }}>
-                Move the magnifying glass above the image of Abel 2390 to search for the dark matter that Euclid has found so far. You can also toggle the audio button to hear a sonification of this data.
+                Move the magnifying glass above the image of Abell 2390 to search for the dark matter that Euclid has found so far. You can also toggle the audio button to hear a sonification of this data.
               </p>
               <a href="https://www.euclid-ec.org/euclid-starts-seeing-darkness/"
                 target="_blank" rel="noopener noreferrer"
@@ -1350,8 +1432,8 @@ const PARTNER_UNIVERSITIES = [
   {
     href: 'https://www.sussex.ac.uk/broadcast/read/68563',
     alt: 'University of Sussex',
-    light: `${PARTNER_IMG}/university_of_sussex_logo.png.webp`,
-    dark:  `${PARTNER_IMG}/university_of_sussex_logo_white.png`,
+    light: `${PARTNER_IMG}/university_of_sussex_custom_logo.png`,
+    dark:  `${PARTNER_IMG}/university_of_sussex_custom_logo_white.png`,
     h: 'clamp(30px, 3.1vw, 42px)',
   },
   {
@@ -1668,7 +1750,7 @@ function CosmicCluesImageCarousel() {
   const goToSlide = React.useCallback(direction => {
     setActiveSlide(current => (current + direction + 2) % 2);
   }, []);
-  const targetSlideLabel = activeSlide === 0 ? 'Show Einstein ring image' : 'Show Abel 2390 dark matter image';
+  const targetSlideLabel = activeSlide === 0 ? 'Show Einstein ring image' : 'Show Abell 2390 dark matter image';
 
   return (
     <div id="cosmic-clues-carousel" aria-label="Gravitational lensing image carousel" style={{ position: 'relative', background: '#000' }}>
@@ -1936,7 +2018,7 @@ function A2390DarkMatterSlide() {
   return (
     <section
       ref={frameRef}
-      aria-label="Abel 2390 dark matter map reveal"
+      aria-label="Abell 2390 dark matter map reveal"
       tabIndex={0}
       onPointerMove={event => {
         setActive(true);
@@ -2061,7 +2143,7 @@ function A2390DarkMatterSlide() {
         gap: 12, flexWrap: 'wrap',
         pointerEvents: 'none',
       }}>
-        <span>ABEL 2390</span>
+        <span>ABELL 2390</span>
         <span>ESA / EUCLID</span>
       </div>
       <a href="https://www.euclid-ec.org/euclid-starts-seeing-darkness/"
@@ -2105,7 +2187,7 @@ function A2390DarkMatterSlide() {
         Learn more
       </a>
       <TopRightIconButton
-        ariaLabel={audioEnabled ? 'Turn Abel 2390 sonification off' : 'Turn Abel 2390 sonification on'}
+        ariaLabel={audioEnabled ? 'Turn Abell 2390 sonification off' : 'Turn Abell 2390 sonification on'}
         pressed={audioEnabled}
         onClick={handleAudioToggle}
         rightOffset="calc(clamp(16px, 3vw, 32px) + 60px)"
@@ -3097,7 +3179,7 @@ function DetectiveSection() {
       <div style={{ position: 'relative', minHeight: 380 }}>
         <iframe
           title="Euclid Field-of-Sky Viewer"
-          src="https://willjroper.github.io/euclid_fos_viewer/"
+          src="https://willjroper.github.io/explore-euclid-imaging/"
           loading="lazy"
           frameBorder="0"
           allowFullScreen
@@ -3181,7 +3263,7 @@ function DetectiveSection() {
             Get directions
           </button>
           <a
-            href="https://willjroper.github.io/euclid_fos_viewer/"
+            href="https://willjroper.github.io/explore-euclid-imaging/"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -3479,7 +3561,7 @@ function FloatingChartermark({ visible }) {
       <>
         <EuclidNav theme={theme} onToggleTheme={toggleTheme} showCampaignBrand={chartermarkHandoffActive} />
         <main id="main-content" tabIndex={-1}>
-          <EuclidHero />
+          <EuclidHero theme={theme} />
           <ScienceSection />
           <NewsSection />
           <DetectiveSection />
