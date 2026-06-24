@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Galactic Centre Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Source+Sans+3:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=19" />
+    <script src="vendor/openseadragon.min.js"></script>
+  </head>
+  <body>
+    <main id="app">
+      <div
+        id="viewer"
+        role="img"
+        aria-label="A dense field of tiny stars fills this wide image taken by the European Space Agency's Euclid space telescope. The image has an irregular, patchwork shape, with jagged edges and black gaps around the borders. The lower and central areas are dominated by bright yellow and gold colours, forming a textured background similar to fine glitter or sand. Dark brown and black patches cut irregularly through the yellow regions, like ink stains or clouds of smoke. Across the upper part of the image, the colours shift to deeper brown, reddish, and purplish tones, blending into the surrounding star field. Small blue points of light are scattered across the image."
+      ></div>
+
+      <header class="topbar" aria-label="Viewer controls">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__text">THE GALACTIC CENTRE</span>
+          <span class="distance-marker" aria-label="28,000 light-years from Earth">
+            <span class="distance-label">28,000 LIGHT-YEARS FROM EARTH</span>
+            <span class="distance-bar" aria-hidden="true"></span>
+          </span>
+        </div>
+
+        <div class="toolbar" role="toolbar" aria-label="Image controls">
+          <button class="text-button text-button--wide" id="astronomer-open" type="button" title="Meet the Astronomer">
+            Meet the Astronomer
+          </button>
+          <button
+            class="mode-switch"
+            id="scene-toggle"
+            type="button"
+            title="Switch to Raw VIS Image"
+            aria-label="Switch to Raw VIS Image"
+            aria-pressed="false"
+          >
+            <span class="mode-switch__track" aria-hidden="true">
+              <span class="mode-switch__thumb"></span>
+            </span>
+            <span class="mode-switch__label">
+              <span class="mode-switch__label-main">Raw VIS</span>
+              <span class="mode-switch__label-mode">Image</span>
+            </span>
+          </button>
+          <button class="text-button" id="home" type="button" title="Return home">Home</button>
+          <button class="icon-button" id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">
+            <span aria-hidden="true">&minus;</span>
+          </button>
+          <button class="icon-button" id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">
+            <span aria-hidden="true">+</span>
+          </button>
+          <button class="icon-button" id="fullscreen" type="button" title="Fullscreen" aria-label="Fullscreen">
+            <span aria-hidden="true">⤢</span>
+          </button>
+        </div>
+      </header>
+
+      <aside class="status" id="fov-status" aria-live="polite">
+        <button
+          class="status-toggle"
+          id="fov-toggle"
+          type="button"
+          aria-label="Hide field of view information"
+          title="Hide field of view information"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <span class="status-message" id="position-label">
+          <span>You are looking at </span><strong id="fov-value">8.89</strong><span> of Euclid's field of view</span>
+        </span>
+        <span class="status-info" aria-hidden="true">i</span>
+      </aside>
+
+      <button
+        class="feature-hotspot"
+        id="molecular-cloud-hotspot"
+        type="button"
+        aria-label="Zoom to molecular cloud"
+        aria-describedby="molecular-cloud-caption"
+        title="Zoom to molecular cloud"
+      >
+        <span class="feature-hotspot__ring" aria-hidden="true"></span>
+      </button>
+
+      <aside class="feature-panel" id="molecular-cloud-panel" aria-live="polite" hidden>
+        <button
+          class="feature-panel__close"
+          id="molecular-cloud-close"
+          type="button"
+          aria-label="Close molecular cloud caption"
+          title="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2>Molecular cloud</h2>
+        <p id="molecular-cloud-caption">
+          This image shows an area of the observations of the galactic bulge, made by the European Space Agency&rsquo;s
+          Euclid space telescope. A dense molecular cloud in the foreground, called LDN 10, obscures the light from the
+          galactic bulge (yellow).
+        </p>
+      </aside>
+
+      <button
+        class="feature-hotspot"
+        id="nebula-hotspot"
+        type="button"
+        aria-label="Zoom to nebula"
+        aria-describedby="nebula-caption"
+        title="Zoom to nebula"
+      >
+        <span class="feature-hotspot__ring" aria-hidden="true"></span>
+      </button>
+
+      <aside class="feature-panel" id="nebula-panel" aria-live="polite" hidden>
+        <button
+          class="feature-panel__close"
+          id="nebula-close"
+          type="button"
+          aria-label="Close nebula caption"
+          title="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2>Nebula</h2>
+        <p id="nebula-caption">
+          This image shows an area of the observations of the galactic bulge, made by the European Space Agency&rsquo;s
+          Euclid space telescope. An emission nebula, known as G000.583-00.870, is visible in red. This nebula is a
+          cloud formed of ionised gases that were send out by massive stars that recently formed in a spiral arm of the
+          Milky Way.
+        </p>
+      </aside>
+
+      <button
+        class="feature-hotspot"
+        id="star-cluster-hotspot"
+        type="button"
+        aria-label="Zoom to star cluster"
+        aria-describedby="star-cluster-caption"
+        title="Zoom to star cluster"
+      >
+        <span class="feature-hotspot__ring" aria-hidden="true"></span>
+      </button>
+
+      <aside class="feature-panel" id="star-cluster-panel" aria-live="polite" hidden>
+        <button
+          class="feature-panel__close"
+          id="star-cluster-close"
+          type="button"
+          aria-label="Close star cluster caption"
+          title="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2>Star cluster</h2>
+        <p id="star-cluster-caption">
+          This image shows an area of the observations of the galactic bulge, made by the European Space Agency&rsquo;s
+          Euclid space telescope. Here the open star cluster NGC 6451 is visible, 8700 light-years away from us.
+        </p>
+      </aside>
+
+      <button
+        class="feature-hotspot"
+        id="countless-stars-hotspot"
+        type="button"
+        aria-label="Zoom to countless stars"
+        aria-describedby="countless-stars-caption"
+        title="Zoom to countless stars"
+      >
+        <span class="feature-hotspot__ring" aria-hidden="true"></span>
+      </button>
+
+      <aside class="feature-panel" id="countless-stars-panel" aria-live="polite" hidden>
+        <button
+          class="feature-panel__close"
+          id="countless-stars-close"
+          type="button"
+          aria-label="Close countless stars caption"
+          title="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2>Countless stars</h2>
+        <p id="countless-stars-caption">
+          This image shows an area of the observations of the galactic bulge, made by the European Space Agency&rsquo;s
+          Euclid space telescope. The galactic bulge &ndash; the central region our galaxy &ndash; is a vast, tightly
+          packed structure filled mainly with old, cooler stars, giving it its characteristic yellow colour.
+        </p>
+      </aside>
+
+      <button
+        class="feature-hotspot"
+        id="pipeline-hotspot"
+        type="button"
+        aria-label="Zoom to behind the scenes pipeline comparison"
+        aria-describedby="pipeline-caption"
+        title="Zoom to behind the scenes pipeline comparison"
+      >
+        <span class="feature-hotspot__ring" aria-hidden="true"></span>
+      </button>
+
+      <aside class="feature-panel feature-panel--wide" id="pipeline-panel" aria-live="polite" hidden>
+        <button
+          class="feature-panel__close"
+          id="pipeline-close"
+          type="button"
+          aria-label="Close behind the scenes caption"
+          title="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <img
+          class="feature-panel__image"
+          src="images/features/egbs-vs-normal.png"
+          alt="The Euclid Galactic Bulge Survey compared with a normal Euclid image."
+        />
+        <p id="pipeline-caption">
+          The Euclid Galactic Bulge Survey (left) compared to a &lsquo;normal&rsquo; Euclid image (Abell 2764, right).
+          The products of the main pipeline operated by the Science Ground Segment are used by most scientists in the
+          Euclid Consortium. However, the main pipeline &ndash; primarily designed to detect, isolate, and measure
+          distant galaxies &ndash; is not well suited for extremely crowded fields containing tens of millions of stars
+          in one image. The vertical streaks are caused by extremely bright stars that saturate the pixels they fall on.
+          The excess charge overflows into adjacent pixels above and below, which in turn become saturated and continue
+          spreading the charge along the column, forming a vertical line.
+          <a
+            class="feature-panel__link"
+            href="https://www.euclid-ec.org/behind-the-scenes-euclid-galactic-bulge-survey-q2/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read more
+          </a>
+        </p>
+      </aside>
+
+      <div class="partner-logos" aria-label="Partner logos">
+        <img
+          class="partner-logo partner-logo--euclid"
+          src="images/logos/EC_logos_official_white_with_text.png"
+          alt="Euclid Consortium"
+        />
+        <img
+          class="partner-logo partner-logo--royal-society"
+          src="images/logos/royalsocietylogo.png"
+          alt="The Royal Society"
+        />
+      </div>
+
+      <section class="video-overlay" id="astronomer-overlay" aria-label="Meet the Astronomer videos" hidden>
+        <div class="video-dialog" role="dialog" aria-modal="true" aria-labelledby="astronomer-title">
+          <button class="video-dialog__close" id="astronomer-close" type="button" aria-label="Close videos" title="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div class="video-dialog__header">
+            <h2 id="astronomer-title">Meet the Astronomer</h2>
+          </div>
+          <div class="video-dialog__body">
+            <video
+              class="video-player"
+              id="astronomer-video"
+              src="videos/01_Meet_the_Astronomer.mp4"
+              controls
+              playsinline
+            ></video>
+            <div class="video-playlist" role="list" aria-label="Astronomer video playlist">
+              <button
+                class="video-playlist__item video-playlist__item--active"
+                type="button"
+                data-video="videos/01_Meet_the_Astronomer.mp4"
+              >
+                Meet the Astronomer
+              </button>
+              <button
+                class="video-playlist__item"
+                type="button"
+                data-video="videos/02_Why_is_Euclid_so_exciting.mp4"
+              >
+                Why is Euclid so exciting?
+              </button>
+              <button
+                class="video-playlist__item"
+                type="button"
+                data-video="videos/03_Why_is_the_galactic_centre_so_interesting.mp4"
+              >
+                Why is the galactic centre so interesting?
+              </button>
+              <button
+                class="video-playlist__item"
+                type="button"
+                data-video="videos/04_How_were_you_involved.mp4"
+              >
+                How were you involved?
+              </button>
+              <button
+                class="video-playlist__item"
+                type="button"
+                data-video="videos/05_Why_should_we_do_astronomy_in_the_UK.mp4"
+              >
+                Why should we do astronomy in the UK?
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="viewer.js?v=35" defer></script>
+  </body>
+</html>
