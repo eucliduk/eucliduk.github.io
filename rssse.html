@@ -1850,6 +1850,26 @@ function NewsSection() {
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--purple-primary)'; e.currentTarget.style.transform = 'none'; }}>
                   Take a spacetime selfie!
                 </a>
+                <a href="https://apps.apple.com/gb/app/gravylensing/id6783065795"
+                  target="_blank" rel="noopener noreferrer"
+                  className="app-store-link"
+                  aria-label="Download GravyLensing on the App Store"
+                  style={{ display: 'inline-flex', marginTop: 14, lineHeight: 0, transition: 'opacity 220ms var(--ease-space), transform 220ms var(--ease-space)' }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none'; }}>
+                  <img
+                    src="images/Download_on_App_Store/White_lockup/SVG/Download_on_the_App_Store_Badge_US-UK_RGB_wht_092917.svg"
+                    alt="Download on the App Store"
+                    className="logo-img logo-img--light-only"
+                    style={{ width: 'min(190px, 62vw)', height: 'auto', display: 'block' }}
+                  />
+                  <img
+                    src="images/Download_on_App_Store/Black_lockup/SVG/Download_on_the_App_Store_Badge_US-UK_RGB_blk_092917.svg"
+                    alt="Download on the App Store"
+                    className="logo-img logo-img--dark-only"
+                    style={{ width: 'min(190px, 62vw)', height: 'auto', display: 'block' }}
+                  />
+                </a>
             </div>
           </div>
         </div>

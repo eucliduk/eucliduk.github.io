@@ -373,6 +373,30 @@
       background: var(--orange-primary);
       border-color: var(--orange-primary);
     }
+    .welcome-actions {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .welcome-app-store {
+      display: inline-flex;
+      justify-content: center;
+      line-height: 0;
+      transition: opacity 0.15s var(--ease-space), transform 0.15s var(--ease-space);
+    }
+    .welcome-app-store:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+    .welcome-app-store img {
+      width: min(210px, 72vw);
+      height: auto;
+      display: block;
+    }
+    .welcome-web-copy {
+      margin-top: 2px;
+      text-align: center;
+    }
     @media (max-width: 960px) {
       nav#navbar {
         height: 70px;
@@ -725,48 +749,14 @@
   <div id="welcome-guide" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
     <div class="welcome-card">
       <h2 id="welcome-title">Ready to spacetime your selfies?</h2>
-      <p class="welcome-intro"><span class="welcome-script">Instawarp</span> places a massive astronomical object between you and your camera! Based on real physics, this bends and distorts the light to distort your selfies - have fun!</p>
-      <div class="welcome-steps">
-        <div class="welcome-step">
-          <span class="welcome-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"/>
-              <line x1="4" y1="10" x2="4" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12" y2="3"/>
-              <line x1="20" y1="21" x2="20" y2="16"/>
-              <line x1="20" y1="12" x2="20" y2="3"/>
-              <line x1="1" y1="14" x2="7" y2="14"/>
-              <line x1="9" y1="8" x2="15" y2="8"/>
-              <line x1="17" y1="16" x2="23" y2="16"/>
-            </svg>
-          </span>
-          <p>Go into the settings to toggle and experiment with the mass and radius of the astronomical object. How does this impact your selfies?</p>
-        </div>
-        <div class="welcome-step">
-          <span class="welcome-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-          </span>
-          <p>Press the image button to warp images from your camera roll instead of the camera feed.</p>
-        </div>
-        <div class="welcome-step">
-          <span class="welcome-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="18" cy="5" r="3"/>
-              <circle cx="6" cy="12" r="3"/>
-              <circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
-          </span>
-          <p>Press this button to share your spacetime selfie creations with the universe!</p>
-        </div>
+      <p class="welcome-intro"><span class="welcome-script">GravyLensing</span> lets you make gravitational-lensing selfies with a smoother app experience on iPhone and iPad.</p>
+      <div class="welcome-actions">
+        <a href="https://apps.apple.com/gb/app/gravylensing/id6783065795" target="_blank" rel="noopener noreferrer" class="welcome-app-store" aria-label="Download GravyLensing on the App Store">
+          <img src="images/Download_on_App_Store/Black_lockup/SVG/Download_on_the_App_Store_Badge_US-UK_RGB_blk_092917.svg" alt="Download on the App Store" />
+        </a>
+        <p class="welcome-web-copy">On Android, desktop, or just want to keep going here?</p>
+        <button id="welcome-close" type="button">Continue to the webpage version</button>
       </div>
-      <button id="welcome-close" type="button">Take a spacetime selfie!</button>
     </div>
   </div>
 
