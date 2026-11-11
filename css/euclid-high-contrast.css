@@ -1,0 +1,114 @@
+html[data-contrast="high"] {
+  --ink: #000;
+  --slate: #000;
+  --surface: #fff;
+  --glass: #fff;
+  --glass-strong: #fff;
+  --muted: #000;
+  --control-hover: #fff;
+  --control-selected: #e5e5e5;
+  --track: #000;
+  --amber: #000;
+  --olive: #000;
+  --accent-text: #000;
+  --olive-text: #000;
+}
+
+html[data-contrast="high"][data-theme="dark"] {
+  --ink: #fff;
+  --slate: #fff;
+  --surface: #000;
+  --glass: #000;
+  --glass-strong: #000;
+  --muted: #fff;
+  --control-hover: #000;
+  --control-selected: #252525;
+  --track: #fff;
+  --amber: #ffe060;
+  --olive: #ffe060;
+  --accent-text: #ffe060;
+  --olive-text: #ffe060;
+}
+
+html[data-contrast="high"] .home-content {
+  --ink: var(--slate);
+  --space-black: #fff;
+  --space-deep: #fff;
+  --space-mid: #fff;
+  --cream: #000;
+  --grey-mid: #000;
+  --grey-dark: #000;
+  --border: #000;
+  --border-bright: #000;
+  --purple-primary: #000;
+  --purple-light: #000;
+  --orange-primary: #000;
+  --orange-glow: #000;
+}
+
+html[data-contrast="high"][data-theme="dark"] .home-content {
+  --space-black: #000;
+  --space-deep: #000;
+  --space-mid: #000;
+  --cream: #fff;
+  --grey-mid: #fff;
+  --grey-dark: #fff;
+  --border: #fff;
+  --border-bright: #fff;
+  --purple-primary: #ffe060;
+  --purple-light: #ffe060;
+  --orange-primary: #ffe060;
+  --orange-glow: #ffe060;
+}
+
+html[data-contrast="high"] .home-content :is(.section-headline__word, strong, figcaption)[style*="var(--purple"],
+html[data-contrast="high"] .home-content :is(strong, figcaption)[style*="var(--orange"] {
+  color: var(--accent-text) !important;
+}
+
+html[data-contrast="high"] .home-content .hero-scrim {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+html[data-contrast="high"] .home-content .image-caption {
+  color: #fff !important;
+  background: #000;
+}
+
+html[data-contrast="high"] .home-content :is(.hero-content button, .newsletter-button) {
+  color: #000 !important;
+  background: #ffe060 !important;
+}
+
+html[data-contrast="high"] .home-content :is(a, button)[style*="background: var(--purple"] {
+  color: #000 !important;
+  background: #ffe060 !important;
+}
+
+html[data-contrast="high"] .home-content .newsletter-section {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+html[data-contrast="high"] .home-content .cosmic-cta:not(.cosmic-cta--selfie) {
+  color: #fff !important;
+  background: #000 !important;
+}
+
+html[data-contrast="high"][data-theme="dark"] .home-content .cosmic-cta:not(.cosmic-cta--selfie) {
+  color: #000 !important;
+  background: #ffe060 !important;
+}
+
+html[data-contrast="high"] :is(.site-main, .site-footer) a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+html[data-contrast="high"] .home-content .cosmic-cta--selfie {
+  color: #fff !important;
+}
+
+html[data-contrast="high"] .site-footer-accents {
+  display: none;
+}

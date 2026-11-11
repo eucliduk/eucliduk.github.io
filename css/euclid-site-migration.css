@@ -1,0 +1,57 @@
+html { height: auto; background: var(--surface); }
+body.euclid-site { height: auto; min-height: 100vh; min-width: 0; overflow: visible; background: var(--surface); color: var(--ink); }
+.content-section { max-width: 90rem; margin-inline: auto; }
+.content-section > :is(p, ul, ol) { max-width: 65rem; }
+.press-contacts, .scientists-content { padding: 3rem 5.5%; max-width: 90rem; margin-inline: auto; }
+.press-contacts :is(a, p), .scientists-content :is(a, p) { overflow-wrap: anywhere; }
+.scientists-section { margin-block: 3rem; }
+.content-section > h2 { font-size: clamp(2rem, 4vw, 4rem); }
+.content-section :is(a, p, li), .team-profiles p { overflow-wrap: anywhere; }
+.content-section .chapter-grid { margin-block: 2rem; }
+.content-section form { max-width: 45rem; }
+.content-section fieldset { min-inline-size: 0; border: 1px solid currentColor; padding: 1.5rem; }
+.content-section legend { max-width: 100%; overflow-wrap: anywhere; }
+.content-section label { display: block; margin-block: .75rem .25rem; }
+.content-section :is(input:not([type="checkbox"]), select) { width: 100%; max-width: 100%; min-height: 2.75rem; font: inherit; }
+.content-section input[type="checkbox"] { min-width: 1.5rem; min-height: 1.5rem; vertical-align: middle; }
+.content-section button { min-height: 2.75rem; font: inherit; }
+.newsletter-consent { display: flex !important; align-items: flex-start; gap: .75rem; }
+.newsletter-name-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 2rem; }
+.portrait-card { background: var(--blue); color: var(--button-ink); }
+.portrait-img { position: relative; }
+.portrait-img img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.portrait-overlay, .portrait-body { padding: 1.5rem; }
+.portrait-name { font-family: "Anton", sans-serif; font-weight: 400; }
+.portrait-tag { margin: 0; }
+.portrait-quote { margin: 0; }
+.talk-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 2rem; margin-block: 2rem; }
+.talk-inner > * { min-width: 0; }
+.talk-image-frame img { width: 100%; max-width: min(100%, 22rem); }
+.talk-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1rem; }
+.talk-royal-society-logo { width: min(100%, 12rem); max-width: 100%; margin-block: 1rem; }
+.attendees-names { display: flex; flex-wrap: wrap; gap: .5rem; }
+.orbit-page .app-header { position: relative; height: auto; display: flex; }
+.orbit-document .orbit-app { min-height: 0; }
+.orbit-document .space-view { height: 80svh; min-height: 35rem; }
+.orbit-page .survey-progress-toggle { position: absolute; top: 1rem; }
+.orbit-page .site-masthead { z-index: 30; }
+.orbit-page .orbit-story { background: var(--surface); color: var(--ink); }
+.gallery-site #gallery-page { padding-top: 0; }
+.gallery-site .intro { padding: 3rem 3.6%; background: var(--surface); color: var(--ink); }
+.gallery-site .intro h1 { font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(3rem, 7.7vw, 6.5rem); overflow-wrap: anywhere; }
+.gallery-site .intro__copy > p:first-child { color: var(--ink); font-size: clamp(1rem, 1.6vw, 1.25rem); }
+.gallery-site :is(.eyebrow, .intro__instruction) { font-size: .875rem; }
+.gallery-site :is(.image-viewer, .image-viewer__backdrop, .viewer-control) { background: var(--surface); color: var(--ink); }
+.gallery-site .image-viewer__caption h2 { font-size: clamp(1.25rem, 2vw, 1.75rem); }
+.gallery-site .image-viewer__caption p { font-size: .875rem; }
+.gallery-site :is(.fpa-section, .gallery-intro) { background: var(--surface); color: var(--ink); }
+@media (max-width: 45rem) {
+  .talk-inner { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-site { scroll-behavior: auto; }
+}
+@media (forced-colors: active) {
+  .portrait-card { background: Canvas; color: CanvasText; }
+}
