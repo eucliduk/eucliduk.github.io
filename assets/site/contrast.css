@@ -1,0 +1,42 @@
+html[data-contrast="high"] :is(.discover, .join, .page-hero, .destination, .tag) { background: var(--surface); color: var(--ink); }
+html[data-contrast="high"] .audience-tab { background: #000; color: #fff; border: 1px solid #fff; }
+html[data-contrast="high"] :is(.coral, .blue) { background: transparent; color: var(--surface); border: 0; --panel-face: var(--ink); --panel-fold: var(--ink); }
+html[data-contrast="high"] :is(.hero, .cosmic-banner) { background: var(--surface); color: var(--ink); }
+html[data-contrast="high"] :is(.hero-image, .cosmic-banner > img) { opacity: .12; }
+html[data-contrast="high"] :is(.hero, .cosmic-banner)::before { background: var(--surface); opacity: .9; }
+html[data-contrast="high"] :is(.hero, .cosmic-banner) :is(a, button):focus-visible { outline-color: var(--ink); }
+html[data-contrast="high"] a { text-decoration: underline; }
+html[data-contrast="high"] .hero-stars { display: none; }
+html[data-contrast="high"] .site-search-button, html[data-contrast="high"] .site-search-button:hover { color: var(--surface); --panel-face: var(--ink); --panel-fold: var(--ink); }
+html[data-contrast="high"] .home-hero-header .site-search-button:focus-visible { outline-color: var(--ink); }
+html[data-contrast="high"] .carousel-arrow { color: var(--surface); --panel-face: var(--ink); --panel-fold: var(--ink); }
+html[data-contrast="high"] .carousel-pagination { background: transparent; border: 0; }
+html[data-contrast="high"] .carousel-dot { background: var(--surface); }
+html[data-contrast="high"] .carousel-page[aria-current="true"] .carousel-dot { background: var(--ink); }
+@media (forced-colors: active) {
+  .carousel-arrow { color: ButtonText; --panel-face: ButtonFace; --panel-fold: ButtonText; --panel-stroke: ButtonText; --panel-border: 1px; }
+  .carousel-pagination { background: transparent; border: 0; }
+  .carousel-dot { background: Canvas; border-color: ButtonText; }
+  .carousel-page[aria-current="true"] .carousel-dot { background: ButtonText; }
+}
+html[data-contrast="high"] .home-hero-header .app-header { color: var(--ink); background: var(--surface); }
+html[data-contrast="high"] .home-hero-header .app-header :is(a, summary):focus-visible { outline-color: var(--ink); }
+html[data-contrast="high"] .home-hero-header .menu > summary { color: var(--ink); --panel-face: var(--surface); --panel-stroke: var(--ink); --panel-fold: var(--ink); }
+html[data-contrast="high"] :is(.destination::before, .join::before, .page-hero::after) { background: var(--surface); }
+html[data-contrast="high"] .gallery-site .eyebrow { color: var(--ink); }
+
+html[data-contrast="high"] .back-to-top { color: var(--surface); --panel-face: var(--ink); --panel-fold: var(--ink); }
+html[data-contrast="high"] .hero-scroll-cue { color: var(--ink); background: var(--surface); }
+html[data-contrast="high"] .hero-scroll-cue svg { filter: none; animation: none; }
+
+html[data-contrast="high"] .resource-card-grid { --resource-card-surface: var(--surface); --resource-card-title: var(--ink); --resource-card-accent: var(--ink); }
+html[data-contrast="high"] .school-resource { border: 1px solid var(--ink); }
+
+html[data-contrast="high"] .image-card-carousel { --image-card-surface: var(--surface); }
+html[data-contrast="high"] .image-card-track figcaption { background: var(--surface); color: var(--ink); }
+html[data-contrast="high"] .news-story-card { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
+html[data-contrast="high"] .news-story-body h3 { color: var(--ink); }
+
+html[data-contrast="high"] { --editorial-surface: var(--surface); --editorial-title: var(--ink); }
+html[data-contrast="high"] :is(.portrait-card, .people-profile-preview, .events-page .chapter, .event-recording, .media-coverage > .media-card, .events-page .talk-inner) { border: 1px solid var(--ink); }
+html[data-contrast="high"] :is(.resource-filter, .people-list-toggle, .people-portrait-toggle, .people-name-picker summary, .people-name-list button) { border-color: var(--ink); }
